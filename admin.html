@@ -260,6 +260,7 @@
             
             let soldCount = 0;
             const TOTAL = 3500;
+            const purchases = {}; // Group by RUT + Date to calculate revenue correctly
 
             for (let i = 1; i <= TOTAL; i++) {
                 const data = masterList[i];
@@ -267,6 +268,14 @@
                 
                 if (data) {
                     soldCount++;
+                    
+                    // Grouping for revenue
+                    const purchaseKey = `${data.rut}_${data.date}`;
+                    if (!purchases[purchaseKey]) {
+                        purchases[purchaseKey] = 0;
+                    }
+                    purchases[purchaseKey]++;
+
                     tr.innerHTML = `
                         <td><strong>#${i}</strong></td>
                         <td>${data.name}</td>
@@ -287,9 +296,20 @@
                 tbody.appendChild(tr);
             }
 
+            // Calculate actual revenue based on promo formula
+            let totalRevenue = 0;
+            const pricePerTicket = 7500;
+            const pricePerThree = 15000;
+
+            Object.values(purchases).forEach(quantity => {
+                const setsOfThree = Math.floor(quantity / 3);
+                const remainder = quantity % 3;
+                totalRevenue += (setsOfThree * pricePerThree) + (remainder * pricePerTicket);
+            });
+
             document.getElementById('stat-sold').innerText = soldCount;
             document.getElementById('stat-available').innerText = TOTAL - soldCount;
-            document.getElementById('stat-revenue').innerText = '$' + (soldCount * 7500).toLocaleString('es-CL'); 
+            document.getElementById('stat-revenue').innerText = '$' + totalRevenue.toLocaleString('es-CL'); 
         }
 
         function switchTab(tabId) {
