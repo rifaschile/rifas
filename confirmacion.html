@@ -216,6 +216,22 @@
             try {
                 localStorage.setItem('raffle_master_list', JSON.stringify(masterList));
                 localStorage.removeItem('raffle_temp_data');
+                
+                // NOTIFICATION: Send email via Formspree
+                fetch('https://formspree.io/f/rifapremiumchile@gmail.com', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        _subject: "NUEVO COMPROBANTE RECIBIDO - Rifas Premium",
+                        nombre: name,
+                        rut: tempData.rut,
+                        telefono: phone,
+                        email: tempData.email,
+                        tickets: assignedNumbers.join(', '),
+                        mensaje: "Un nuevo participante ha subido su comprobante. Revisa el panel de administrador para validar la imagen."
+                    })
+                }).catch(err => console.log("Notification error:", err));
+
                 alert(`¡Excelente ${name}! Hemos recibido tu comprobante.\n\nTus números son: ${assignedNumbers.join(', ')}.\n\nEn breve nos contactaremos contigo por WhatsApp para la validación final. ¡Mucha suerte!`);
                 window.location.href = 'index.html';
             } catch (e) {
