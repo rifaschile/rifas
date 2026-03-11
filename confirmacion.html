@@ -147,15 +147,34 @@
             document.getElementById('confirm-phone').value = tempData.phone || '';
         }
 
-        document.getElementById('receipt-form').addEventListener('submit', (e) => {
+        document.getElementById('receipt-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             
             const name = document.getElementById('confirm-name').value;
             const phone = document.getElementById('confirm-phone').value;
+            const fileInput = document.getElementById('receipt-file');
+            const file = fileInput.files[0];
             
             if (!tempData) {
                 alert('Error: No se encontraron datos de la compra inicial. Por favor intenta de nuevo.');
                 return;
+            }
+
+            // Function to convert file to Base64
+            const toBase64 = file => new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = error => reject(error);
+            });
+
+            let receiptData = "";
+            if (file) {
+                try {
+                    receiptData = await toBase64(file);
+                } catch (err) {
+                    console.error("Error encoding file", err);
+                }
             }
 
             // --- TICKET ASSIGNMENT LOGIC ---
@@ -187,17 +206,25 @@
                     rut: tempData.rut,
                     phone,
                     email: tempData.email,
-                    date: new Date().toLocaleString()
+                    date: new Date().toLocaleString(),
+                    receipt: receiptData // Store proof
                 };
                 assignedNumbers.push(chosenNumber);
             }
 
             // Save back to localStorage
-            localStorage.setItem('raffle_master_list', JSON.stringify(masterList));
-            localStorage.removeItem('raffle_temp_data');
-
-            alert(`¡Excelente ${name}! Hemos recibido tu comprobante.\n\nTus números son: ${assignedNumbers.join(', ')}.\n\nEn breve nos contactaremos contigo por WhatsApp para la validación final. ¡Mucha suerte!`);
-            window.location.href = 'index.html';
+            try {
+                localStorage.setItem('raffle_master_list', JSON.stringify(masterList));
+                localStorage.removeItem('raffle_temp_data');
+                alert(`¡Excelente ${name}! Hemos recibido tu comprobante.\n\nTus números son: ${assignedNumbers.join(', ')}.\n\nEn breve nos contactaremos contigo por WhatsApp para la validación final. ¡Mucha suerte!`);
+                window.location.href = 'index.html';
+            } catch (e) {
+                if (e.name === 'QuotaExceededError') {
+                    alert('Error: El archivo es muy grande para el almacenamiento local. Por favor intenta con una imagen más pequeña o un PDF comprimido.');
+                } else {
+                    alert('Hubo un error al guardar los datos. Por favor intenta nuevamente.');
+                }
+            }
         });
     </script>
 </body>
