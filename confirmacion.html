@@ -135,6 +135,11 @@
                 <button type="submit" class="btn-finish">Finalizar Inscripción</button>
             </form>
 
+            <div id="manual-whatsapp" style="display: none; margin-top: 20px; border-top: 1px solid rgba(255,215,0,0.2); padding-top: 20px;">
+                <p style="font-size: 0.9rem; margin-bottom: 15px;">¿Llenaste el formulario? También puedes avisar directamente:</p>
+                <a id="whatsapp-fallback-btn" href="#" class="btn-whatsapp" target="_blank" style="background: #25d366; color: #fff; text-decoration: none; padding: 12px; border-radius: 5px; display: block; font-weight: 700;">📲 Notificar por WhatsApp</a>
+            </div>
+
             <a href="index.html" class="back-home">Volver al inicio</a>
         </div>
     </main>
@@ -220,7 +225,10 @@
                 // NOTIFICATION: Send email via Formspree
                 fetch('https://formspree.io/f/rifapremiumchile@gmail.com', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
                     body: JSON.stringify({
                         _subject: "NUEVO COMPROBANTE RECIBIDO - Rifas Premium",
                         nombre: name,
@@ -230,10 +238,20 @@
                         tickets: assignedNumbers.join(', '),
                         mensaje: "Un nuevo participante ha subido su comprobante. Revisa el panel de administrador para validar la imagen."
                     })
+                }).then(response => {
+                    if (!response.ok) console.log("Formspree response not OK");
                 }).catch(err => console.log("Notification error:", err));
 
-                alert(`¡Excelente ${name}! Hemos recibido tu comprobante.\n\nTus números son: ${assignedNumbers.join(', ')}.\n\nEn breve nos contactaremos contigo por WhatsApp para la validación final. ¡Mucha suerte!`);
-                window.location.href = 'index.html';
+                // Show manual backup
+                const whatsappMsg = `Hola! Soy ${name} (RUT: ${tempData.rut}). Acabo de subir mi comprobante para la rifa. Mis números son: ${assignedNumbers.join(', ')}.`;
+                const whatsappUrl = `https://wa.me/56944908385?text=${encodeURIComponent(whatsappMsg)}`;
+                
+                document.getElementById('whatsapp-fallback-btn').href = whatsappUrl;
+                document.getElementById('manual-whatsapp').style.display = 'block';
+                document.getElementById('receipt-form').style.opacity = '0.5';
+                document.getElementById('receipt-form').style.pointerEvents = 'none';
+
+                alert(`¡Excelente ${name}! Hemos recibido tu comprobante.\n\nTus números son: ${assignedNumbers.join(', ')}.\n\nIMPORTANTE: Te recomendamos presionar el botón de WhatsApp que aparecerá ahora para asegurarte de que recibamos tu aviso de inmediato.`);
             } catch (e) {
                 if (e.name === 'QuotaExceededError') {
                     alert('Error: El archivo es muy grande para el almacenamiento local. Por favor intenta con una imagen más pequeña o un PDF comprimido.');
