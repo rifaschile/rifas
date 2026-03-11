@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirmación de Pago - Rifas Premium Chile</title>
+    <link rel="stylesheet" href="styles.css?v=6">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        .confirmation-container {
+            max-width: 600px;
+            margin: 60px auto;
+            background: rgba(27, 38, 59, 0.8);
+            backdrop-filter: blur(15px);
+            padding: 40px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            text-align: center;
+        }
+
+        .confirmation-container h1 {
+            color: var(--gold);
+            margin-bottom: 20px;
+        }
+
+        .confirmation-container p {
+            margin-bottom: 30px;
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .upload-form {
+            text-align: left;
+        }
+
+        .file-input-wrapper {
+            background: rgba(0, 0, 0, 0.2);
+            border: 2px dashed rgba(255, 215, 0, 0.3);
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 20px;
+            transition: border-color 0.3s;
+        }
+
+        .file-input-wrapper:hover {
+            border-color: var(--gold);
+        }
+
+        .file-input-wrapper input[type="file"] {
+            margin-top: 10px;
+        }
+
+        .btn-finish {
+            width: 100%;
+            padding: 15px;
+            background-color: var(--gold);
+            color: var(--primary-color);
+            font-weight: 700;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn-finish:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 215, 0, 0.4);
+        }
+
+        .back-home {
+            display: inline-block;
+            margin-top: 20px;
+            color: var(--gold);
+            text-decoration: underline;
+            font-size: 0.9rem;
+        }
+
+        .whatsapp-notice {
+            background: rgba(37, 211, 102, 0.15);
+            border: 1px solid #25d366;
+            color: #25d366;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-weight: 600;
+            text-align: left;
+        }
+
+        .whatsapp-notice span {
+            font-size: 1.5rem;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="container" style="justify-content: center;">
+            <h1 class="premium-title">💎 RIFAS PREMIUM CHILE 💎</h1>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="confirmation-container">
+            <h1>¡Último Paso!</h1>
+            <p>Si ya realizaste tu pago en Webpay, por favor sube el comprobante aquí para finalizar tu inscripción y asignar tus números.</p>
+
+            <div class="whatsapp-notice">
+                <span>💬</span>
+                <p style="margin: 0; font-size: 0.95rem;">Una vez subas tu comprobante, <strong>nos contactaremos contigo vía WhatsApp</strong> para confirmar tu compra y enviarte tus números.</p>
+            </div>
+
+            <form id="receipt-form" class="upload-form">
+                <div class="form-group">
+                    <label for="confirm-name">Nombre Completo</label>
+                    <input type="text" id="confirm-name" required placeholder="Tu nombre">
+                </div>
+
+                <div class="form-group">
+                    <label for="confirm-phone">Teléfono de Contacto</label>
+                    <input type="tel" id="confirm-phone" required placeholder="+56 9 1234 5678">
+                </div>
+                
+                <div class="file-input-wrapper">
+                    <label for="receipt-file">Seleccionar Comprobante (Imagen o PDF)</label>
+                    <input type="file" id="receipt-file" accept="image/*,.pdf" required>
+                </div>
+
+                <button type="submit" class="btn-finish">Finalizar Inscripción</button>
+            </form>
+
+            <a href="index.html" class="back-home">Volver al inicio</a>
+        </div>
+    </main>
+
+    <script>
+        // Load data from previous page
+        const tempData = JSON.parse(localStorage.getItem('raffle_temp_data'));
+        if (tempData) {
+            document.getElementById('confirm-name').value = tempData.name || '';
+            document.getElementById('confirm-phone').value = tempData.phone || '';
+        }
+
+        document.getElementById('receipt-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const name = document.getElementById('confirm-name').value;
+            const phone = document.getElementById('confirm-phone').value;
+            
+            if (!tempData) {
+                alert('Error: No se encontraron datos de la compra inicial. Por favor intenta de nuevo.');
+                return;
+            }
+
+            // --- TICKET ASSIGNMENT LOGIC ---
+            const TOTAL_TICKETS = 3500;
+            const quantity = parseInt(tempData.quantity) || 1;
+            
+            // Get master list from localStorage
+            let masterList = JSON.parse(localStorage.getItem('raffle_master_list')) || {};
+            
+            // Find available numbers
+            let availableNumbers = [];
+            for (let i = 1; i <= TOTAL_TICKETS; i++) {
+                if (!masterList[i]) availableNumbers.push(i);
+            }
+
+            if (availableNumbers.length < quantity) {
+                alert('Lo sentimos, no quedan suficientes tickets disponibles.');
+                return;
+            }
+
+            // Randomly assign numbers
+            let assignedNumbers = [];
+            for (let i = 0; i < quantity; i++) {
+                const randomIndex = Math.floor(Math.random() * availableNumbers.length);
+                const chosenNumber = availableNumbers.splice(randomIndex, 1)[0];
+                
+                masterList[chosenNumber] = {
+                    name,
+                    rut: tempData.rut,
+                    phone,
+                    email: tempData.email,
+                    date: new Date().toLocaleString()
+                };
+                assignedNumbers.push(chosenNumber);
+            }
+
+            // Save back to localStorage
+            localStorage.setItem('raffle_master_list', JSON.stringify(masterList));
+            localStorage.removeItem('raffle_temp_data');
+
+            alert(`¡Excelente ${name}! Hemos recibido tu comprobante.\n\nTus números son: ${assignedNumbers.join(', ')}.\n\nEn breve nos contactaremos contigo por WhatsApp para la validación final. ¡Mucha suerte!`);
+            window.location.href = 'index.html';
+        });
+    </script>
+</body>
+
+</html>
