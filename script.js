@@ -109,7 +109,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Save data for later
             localStorage.setItem('raffle_temp_data', JSON.stringify({ name, rut, phone, email, quantity }));
 
-            alert(`¡Excelente ${name}!\n\nSe abrirá la ventana oficial de Webpay para que realices tu pago por ${total}.\n\nUna vez pagado, esta ventana te llevará al último paso para subir tu comprobante.`);
+            alert(`¡Excelente ${name}!\n\nSe abrirá la ventana oficial de Webpay para que realices tu pago por ${total}.\n\nIMPORTANTE: Una vez realizado el pago, VUELVE A ESTA PESTAÑA para subir tu comprobante y ELEGIR TUS NÚMEROS.`);
 
             // Submit the official Webpay form in new window
             const webpayForm = document.getElementById('webpay-official-form');

@@ -5,11 +5,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Confirmación de Pago - Rifas Premium Chile</title>
-    <link rel="stylesheet" href="styles.css?v=6">
+    <link rel="stylesheet" href="styles.css?v=7">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         .confirmation-container {
-            max-width: 600px;
+            max-width: 700px;
             margin: 60px auto;
             background: rgba(27, 38, 59, 0.8);
             backdrop-filter: blur(15px);
@@ -25,32 +25,97 @@
             margin-bottom: 20px;
         }
 
-        .confirmation-container p {
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
             margin-bottom: 30px;
-            font-size: 1.1rem;
-            opacity: 0.9;
+        }
+
+        .step {
+            padding: 10px 20px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            font-size: 0.9rem;
+            opacity: 0.5;
+            transition: all 0.3s;
+        }
+
+        .step.active {
+            background: var(--gold);
+            color: var(--primary-color);
+            opacity: 1;
+            font-weight: 700;
+        }
+
+        /* Number Selector Styling */
+        .number-selector-container {
+            display: none;
+            margin-top: 20px;
+            text-align: left;
+        }
+
+        .number-grid-wrapper {
+            max-height: 400px;
+            overflow-y: auto;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 215, 0, 0.1);
+        }
+
+        .number-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+            gap: 8px;
+        }
+
+        .number-box {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+
+        .number-box:hover:not(.taken) {
+            background: rgba(255, 215, 0, 0.2);
+            border-color: var(--gold);
+        }
+
+        .number-box.selected {
+            background: var(--gold) !important;
+            color: var(--primary-color) !important;
+            font-weight: 700;
+            border-color: var(--gold);
+        }
+
+        .number-box.taken {
+            background: #d0000033 !important;
+            color: #ff4d4d !important;
+            opacity: 0.4;
+            cursor: not-allowed;
+            text-decoration: line-through;
+        }
+
+        .selection-summary {
+            background: rgba(255, 215, 0, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
         .upload-form {
             text-align: left;
-        }
-
-        .file-input-wrapper {
-            background: rgba(0, 0, 0, 0.2);
-            border: 2px dashed rgba(255, 215, 0, 0.3);
-            padding: 30px;
-            border-radius: 10px;
-            text-align: center;
-            margin-bottom: 20px;
-            transition: border-color 0.3s;
-        }
-
-        .file-input-wrapper:hover {
-            border-color: var(--gold);
-        }
-
-        .file-input-wrapper input[type="file"] {
-            margin-top: 10px;
         }
 
         .btn-finish {
@@ -66,35 +131,14 @@
             transition: transform 0.2s, box-shadow 0.2s;
         }
 
-        .btn-finish:hover {
+        .btn-finish:hover:not(:disabled) {
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(255, 215, 0, 0.4);
         }
 
-        .back-home {
-            display: inline-block;
-            margin-top: 20px;
-            color: var(--gold);
-            text-decoration: underline;
-            font-size: 0.9rem;
-        }
-
-        .whatsapp-notice {
-            background: rgba(37, 211, 102, 0.15);
-            border: 1px solid #25d366;
-            color: #25d366;
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 25px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            font-weight: 600;
-            text-align: left;
-        }
-
-        .whatsapp-notice span {
-            font-size: 1.5rem;
+        .btn-finish:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
     </style>
 </head>
@@ -108,65 +152,84 @@
 
     <main class="container">
         <div class="confirmation-container">
-            <h1>¡Último Paso!</h1>
-            <p>Si ya realizaste tu pago en Webpay, por favor sube el comprobante aquí para finalizar tu inscripción y asignar tus números.</p>
-
-            <div class="whatsapp-notice">
-                <span>💬</span>
-                <p style="margin: 0; font-size: 0.95rem;">Una vez subas tu comprobante, <strong>nos contactaremos contigo vía WhatsApp</strong> para confirmar tu compra y enviarte tus números.</p>
+            <div class="step-indicator">
+                <div id="step-1-label" class="step active">1. Subir Comprobante</div>
+                <div id="step-2-label" class="step">2. Elegir Números</div>
             </div>
 
-            <form id="receipt-form" class="upload-form">
-                <div class="form-group">
-                    <label for="confirm-name">Nombre Completo</label>
-                    <input type="text" id="confirm-name" required placeholder="Tu nombre">
-                </div>
+            <div id="upload-phase">
+                <h1>Sube tu Comprobante</h1>
+                <p>Por favor, adjunta la captura de pantalla de tu pago en Webpay para continuar.</p>
+                <form id="receipt-form" class="upload-form">
+                    <div class="form-group">
+                        <label for="confirm-name">Nombre Completo</label>
+                        <input type="text" id="confirm-name" required readonly>
+                    </div>
+                    <div class="form-group">
+                        <label for="confirm-phone">Teléfono</label>
+                        <input type="tel" id="confirm-phone" required readonly>
+                    </div>
+                    <div class="form-group">
+                        <label for="receipt-file">Comprobante (Imagen o PDF)</label>
+                        <input type="file" id="receipt-file" accept="image/*,.pdf" required>
+                    </div>
+                    <button type="submit" class="btn-finish">Validar y Continuar</button>
+                </form>
+            </div>
 
-                <div class="form-group">
-                    <label for="confirm-phone">Teléfono de Contacto</label>
-                    <input type="tel" id="confirm-phone" required placeholder="+56 9 1234 5678">
-                </div>
+            <div id="selection-phase" class="number-selector-container">
+                <h1>Elige tus Números</h1>
+                <p>Selecciona <strong id="needed-count">0</strong> números entre los disponibles (del 1 al 3.500).</p>
                 
-                <div class="file-input-wrapper">
-                    <label for="receipt-file">Seleccionar Comprobante (Imagen o PDF)</label>
-                    <input type="file" id="receipt-file" accept="image/*,.pdf" required>
+                <div class="selection-summary">
+                    <span>Seleccionados: <strong id="current-selection-count">0</strong></span>
+                    <button class="btn-outline-small" onclick="clearSelection()" style="padding: 5px 10px;">Limpiar</button>
                 </div>
 
-                <button type="submit" class="btn-finish">Finalizar Inscripción</button>
-            </form>
+                <div class="number-grid-wrapper">
+                    <div id="number-grid" class="number-grid">
+                        <!-- Numbers will be injected here -->
+                    </div>
+                </div>
 
-            <div id="manual-whatsapp" style="display: none; margin-top: 25px; border-top: 2px solid rgba(255,215,0,0.3); padding-top: 20px;">
-                <p style="font-size: 1.1rem; color: #fff; margin-bottom: 15px; font-weight: 700;">✅ ¡Paso 1 Completado!<br><span style="font-weight: 400; font-size: 0.95rem;">Ahora, para asegurar tu validación inmediata:</span></p>
-                <a id="whatsapp-fallback-btn" href="#" class="btn-whatsapp" target="_blank" style="background: #25d366; color: #fff; text-decoration: none; padding: 18px; border-radius: 8px; display: block; font-weight: 800; font-size: 1.1rem; box-shadow: 0 4px 15px rgba(37, 211, 102, 0.4);">📲 NOTIFICAR POR WHATSAPP</a>
-                <p style="font-size: 0.8rem; margin-top: 10px; opacity: 0.7;">Esto nos enviará tus datos y números de ticket para revisarlos ya.</p>
+                <button id="btn-save-all" class="btn-finish" disabled>Finalizar y Asignar Números</button>
             </div>
 
-            <a href="index.html" class="back-home">Volver al inicio</a>
+            <div id="success-phase" style="display: none;">
+                <h1 style="color: #25d366;">💎 ¡Inscripción Exitosa!</h1>
+                <p>Tus datos han sido guardados y tus números han sido reservados.</p>
+                <div style="background: rgba(0,0,0,0.2); padding: 20px; border-radius: 10px; margin-bottom: 25px;">
+                    <p style="margin-bottom: 5px;">Tus números son:</p>
+                    <h2 id="final-numbers" style="color: var(--gold); letter-spacing: 2px;"></h2>
+                </div>
+                <p style="margin-bottom: 20px;"><strong>IMPORTANTE:</strong> Haz clic abajo para avisarnos por WhatsApp y agilizar la validación.</p>
+                <a id="whatsapp-final-btn" href="#" class="btn-whatsapp" target="_blank" style="background: #25d366; color: #fff; text-decoration: none; padding: 18px; border-radius: 8px; display: block; font-weight: 800; font-size: 1.1rem;">📲 NOTIFICAR POR WHATSAPP</a>
+            </div>
+
+            <a href="index.html" class="back-home" style="display: inline-block; margin-top: 30px; color: var(--gold);">Volver al inicio</a>
         </div>
     </main>
 
     <script>
-        // Load data from previous page
         const tempData = JSON.parse(localStorage.getItem('raffle_temp_data'));
-        if (tempData) {
-            document.getElementById('confirm-name').value = tempData.name || '';
-            document.getElementById('confirm-phone').value = tempData.phone || '';
+        const masterList = JSON.parse(localStorage.getItem('raffle_master_list')) || {};
+        const quantityNeeded = parseInt(tempData?.quantity || 0);
+        let selectedNumbers = [];
+        let receiptData = "";
+
+        if (!tempData) {
+            window.location.href = 'index.html';
+        } else {
+            document.getElementById('confirm-name').value = tempData.name;
+            document.getElementById('confirm-phone').value = tempData.phone;
+            document.getElementById('needed-count').textContent = quantityNeeded;
         }
 
+        // STEP 1: UPLOAD
         document.getElementById('receipt-form').addEventListener('submit', async (e) => {
             e.preventDefault();
+            const file = document.getElementById('receipt-file').files[0];
             
-            const name = document.getElementById('confirm-name').value;
-            const phone = document.getElementById('confirm-phone').value;
-            const fileInput = document.getElementById('receipt-file');
-            const file = fileInput.files[0];
-            
-            if (!tempData) {
-                alert('Error: No se encontraron datos de la compra inicial. Por favor intenta de nuevo.');
-                return;
-            }
-
-            // Function to convert file to Base64
             const toBase64 = file => new Promise((resolve, reject) => {
                 const reader = new FileReader();
                 reader.readAsDataURL(file);
@@ -174,89 +237,109 @@
                 reader.onerror = error => reject(error);
             });
 
-            let receiptData = "";
-            if (file) {
-                try {
-                    receiptData = await toBase64(file);
-                } catch (err) {
-                    console.error("Error encoding file", err);
+            try {
+                receiptData = await toBase64(file);
+                // Switch phases
+                document.getElementById('upload-phase').style.display = 'none';
+                document.getElementById('step-1-label').classList.remove('active');
+                document.getElementById('step-2-label').classList.add('active');
+                document.getElementById('selection-phase').style.display = 'block';
+                generateGrid();
+            } catch (err) {
+                alert("Error al procesar el archivo.");
+            }
+        });
+
+        // STEP 2: GENERATE GRID (1-3500)
+        function generateGrid() {
+            const grid = document.getElementById('number-grid');
+            grid.innerHTML = '';
+            
+            const fragment = document.createDocumentFragment();
+            for (let i = 1; i <= 3500; i++) {
+                const box = document.createElement('div');
+                box.className = 'number-box';
+                box.textContent = i;
+                
+                if (masterList[i]) {
+                    box.classList.add('taken');
+                } else {
+                    box.onclick = () => toggleNumber(i, box);
+                }
+                fragment.appendChild(box);
+            }
+            grid.appendChild(fragment);
+        }
+
+        function toggleNumber(num, element) {
+            if (selectedNumbers.includes(num)) {
+                selectedNumbers = selectedNumbers.filter(n => n !== num);
+                element.classList.remove('selected');
+            } else {
+                if (selectedNumbers.length < quantityNeeded) {
+                    selectedNumbers.push(num);
+                    element.classList.add('selected');
+                } else {
+                    alert(`Ya seleccionaste tus ${quantityNeeded} números.`);
                 }
             }
+            updateUI();
+        }
 
-            // --- TICKET ASSIGNMENT LOGIC ---
-            const TOTAL_TICKETS = 3500;
-            const quantity = parseInt(tempData.quantity) || 1;
-            
-            // Get master list from localStorage
-            let masterList = JSON.parse(localStorage.getItem('raffle_master_list')) || {};
-            
-            // Find available numbers
-            let availableNumbers = [];
-            for (let i = 1; i <= TOTAL_TICKETS; i++) {
-                if (!masterList[i]) availableNumbers.push(i);
-            }
+        function updateUI() {
+            document.getElementById('current-selection-count').textContent = selectedNumbers.length;
+            document.getElementById('btn-save-all').disabled = selectedNumbers.length !== quantityNeeded;
+        }
 
-            if (availableNumbers.length < quantity) {
-                alert('Lo sentimos, no quedan suficientes tickets disponibles.');
-                return;
-            }
+        function clearSelection() {
+            selectedNumbers = [];
+            document.querySelectorAll('.number-box.selected').forEach(el => el.classList.remove('selected'));
+            updateUI();
+        }
 
-            // Randomly assign numbers
-            let assignedNumbers = [];
-            for (let i = 0; i < quantity; i++) {
-                const randomIndex = Math.floor(Math.random() * availableNumbers.length);
-                const chosenNumber = availableNumbers.splice(randomIndex, 1)[0];
-                
-                masterList[chosenNumber] = {
-                    name,
+        // STEP 3: FINALIZE
+        document.getElementById('btn-save-all').addEventListener('click', async () => {
+            // Save to master list
+            selectedNumbers.forEach(num => {
+                masterList[num] = {
+                    name: tempData.name,
                     rut: tempData.rut,
-                    phone,
+                    phone: tempData.phone,
                     email: tempData.email,
                     date: new Date().toLocaleString(),
-                    receipt: receiptData // Store proof
+                    receipt: receiptData
                 };
-                assignedNumbers.push(chosenNumber);
-            }
+            });
 
-            // Save back to localStorage
             try {
                 localStorage.setItem('raffle_master_list', JSON.stringify(masterList));
                 localStorage.removeItem('raffle_temp_data');
-                
-                // Show manual backup IMMEDIATELY and hide form
-                const whatsappMsg = `Hola! Soy ${name} (RUT: ${tempData.rut}). Acabo de subir mi comprobante para la rifa. Mis números son: ${assignedNumbers.join(', ')}.`;
-                const whatsappUrl = `https://wa.me/56944908385?text=${encodeURIComponent(whatsappMsg)}`;
-                
-                document.getElementById('whatsapp-fallback-btn').href = whatsappUrl;
-                document.getElementById('manual-whatsapp').style.display = 'block';
-                document.getElementById('receipt-form').style.display = 'none';
 
-                // NOTIFICATION: Send email via FormSubmit.co (More reliable AJAX)
+                // Notification via FormSubmit
                 fetch('https://formsubmit.co/ajax/rifapremiumchile@gmail.com', {
                     method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                    },
+                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
                     body: JSON.stringify({
-                        "_subject": "NUEVO COMPROBANTE - Rifas Premium",
-                        "Nombre": name,
+                        "_subject": "NUEVA COMPRA (MANUAL) - Rifas Premium",
+                        "Nombre": tempData.name,
                         "RUT": tempData.rut,
-                        "Telefono": phone,
-                        "Email": tempData.email,
-                        "Tickets": assignedNumbers.join(', '),
-                        "Mensaje": "Revisa el panel admin para validar el pago."
+                        "Telefono": tempData.phone,
+                        "Tickets": selectedNumbers.join(', '),
+                        "Mensaje": "El usuario eligió sus números manualmente."
                     })
-                }).catch(err => console.log("FormSubmit error:", err));
+                });
 
-                alert(`¡Excelente ${name}!\n\nTus números son: ${assignedNumbers.join(', ')}.\n\nIMPORTANTE: Ahora presiona el botón "NOTIFICAR POR WHATSAPP" que apareció abajo para avisarnos de inmediato.`);
-            
+                // Success UI
+                document.getElementById('selection-phase').style.display = 'none';
+                document.getElementById('success-phase').style.display = 'block';
+                document.getElementById('final-numbers').textContent = selectedNumbers.join(' - ');
+                
+                const whatsappMsg = `Hola! Soy ${tempData.name} (RUT: ${tempData.rut}). Acabo de subir mi pago y elegí mis números: ${selectedNumbers.join(', ')}.`;
+                document.getElementById('whatsapp-final-btn').href = `https://wa.me/56944908385?text=${encodeURIComponent(whatsappMsg)}`;
+                
+                alert("¡Inscripción completada exitosamente!");
             } catch (e) {
-                if (e.name === 'QuotaExceededError') {
-                    alert('Error: El archivo es muy grande para el almacenamiento local. Por favor intenta con una imagen más pequeña o un PDF comprimido.');
-                } else {
-                    alert('Hubo un error al guardar los datos. Por favor intenta nuevamente.');
-                }
+                alert("Error al guardar: El archivo podría ser muy pesado para la memoria del navegador.");
             }
         });
     </script>
