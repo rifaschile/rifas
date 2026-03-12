@@ -544,31 +544,40 @@ nav a:hover {
     background-color: #20BA5A;
 }
 
-/* Floating WhatsApp */
-.float-whatsapp {
+/* Floating Social Buttons */
+.float-whatsapp, .float-instagram {
     position: fixed;
     width: 60px;
     height: 60px;
-    bottom: 40px;
     right: 40px;
-    background-color: #25d366;
     color: #FFF;
     border-radius: 50px;
     text-align: center;
     font-size: 30px;
-    box-shadow: 2px 2px 3px #999;
+    box-shadow: 2px 2px 15px rgba(0,0,0,0.3);
     z-index: 1000;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: transform 0.3s;
+    transition: transform 0.3s, filter 0.3s;
 }
 
-.float-whatsapp:hover {
+.float-whatsapp {
+    bottom: 40px;
+    background-color: #25d366;
+}
+
+.float-instagram {
+    bottom: 115px; /* Spaced above WhatsApp */
+    background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%,#d6249f 60%,#285AEB 90%);
+}
+
+.float-whatsapp:hover, .float-instagram:hover {
     transform: scale(1.1);
+    filter: brightness(1.1);
 }
 
-.float-whatsapp img {
+.float-whatsapp img, .float-instagram img {
     width: 35px;
     height: 35px;
 }
