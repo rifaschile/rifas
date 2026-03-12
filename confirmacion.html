@@ -135,9 +135,10 @@
                 <button type="submit" class="btn-finish">Finalizar Inscripción</button>
             </form>
 
-            <div id="manual-whatsapp" style="display: none; margin-top: 20px; border-top: 1px solid rgba(255,215,0,0.2); padding-top: 20px;">
-                <p style="font-size: 0.9rem; margin-bottom: 15px;">¿Llenaste el formulario? También puedes avisar directamente:</p>
-                <a id="whatsapp-fallback-btn" href="#" class="btn-whatsapp" target="_blank" style="background: #25d366; color: #fff; text-decoration: none; padding: 12px; border-radius: 5px; display: block; font-weight: 700;">📲 Notificar por WhatsApp</a>
+            <div id="manual-whatsapp" style="display: none; margin-top: 25px; border-top: 2px solid rgba(255,215,0,0.3); padding-top: 20px;">
+                <p style="font-size: 1.1rem; color: #fff; margin-bottom: 15px; font-weight: 700;">✅ ¡Paso 1 Completado!<br><span style="font-weight: 400; font-size: 0.95rem;">Ahora, para asegurar tu validación inmediata:</span></p>
+                <a id="whatsapp-fallback-btn" href="#" class="btn-whatsapp" target="_blank" style="background: #25d366; color: #fff; text-decoration: none; padding: 18px; border-radius: 8px; display: block; font-weight: 800; font-size: 1.1rem; box-shadow: 0 4px 15px rgba(37, 211, 102, 0.4);">📲 NOTIFICAR POR WHATSAPP</a>
+                <p style="font-size: 0.8rem; margin-top: 10px; opacity: 0.7;">Esto nos enviará tus datos y números de ticket para revisarlos ya.</p>
             </div>
 
             <a href="index.html" class="back-home">Volver al inicio</a>
@@ -214,19 +215,21 @@
                     date: new Date().toLocaleString(),
                     receipt: receiptData // Store proof
                 };
-                assignedNumbers.push(chosen            // Save back to localStorage
+                assignedNumbers.push(chosenNumber);
+            }
+
+            // Save back to localStorage
             try {
                 localStorage.setItem('raffle_master_list', JSON.stringify(masterList));
                 localStorage.removeItem('raffle_temp_data');
                 
-                // Show manual backup IMMEDIATELY
+                // Show manual backup IMMEDIATELY and hide form
                 const whatsappMsg = `Hola! Soy ${name} (RUT: ${tempData.rut}). Acabo de subir mi comprobante para la rifa. Mis números son: ${assignedNumbers.join(', ')}.`;
                 const whatsappUrl = `https://wa.me/56944908385?text=${encodeURIComponent(whatsappMsg)}`;
                 
                 document.getElementById('whatsapp-fallback-btn').href = whatsappUrl;
                 document.getElementById('manual-whatsapp').style.display = 'block';
-                document.getElementById('receipt-form').style.opacity = '0.3';
-                document.getElementById('receipt-form').style.pointerEvents = 'none';
+                document.getElementById('receipt-form').style.display = 'none';
 
                 // NOTIFICATION: Send email via FormSubmit.co (More reliable AJAX)
                 fetch('https://formsubmit.co/ajax/rifapremiumchile@gmail.com', {
@@ -247,7 +250,7 @@
                 }).catch(err => console.log("FormSubmit error:", err));
 
                 alert(`¡Excelente ${name}!\n\nTus números son: ${assignedNumbers.join(', ')}.\n\nIMPORTANTE: Ahora presiona el botón "NOTIFICAR POR WHATSAPP" que apareció abajo para avisarnos de inmediato.`);
-            } catch (e) {mos tu aviso de inmediato.`);
+            
             } catch (e) {
                 if (e.name === 'QuotaExceededError') {
                     alert('Error: El archivo es muy grande para el almacenamiento local. Por favor intenta con una imagen más pequeña o un PDF comprimido.');
