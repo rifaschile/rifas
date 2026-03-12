@@ -272,7 +272,16 @@
                             <label for="email">Correo Electrónico</label>
                             <input type="email" id="email" name="email" required placeholder="juan@ejemplo.com">
                         </div>
-                        <button type="submit" class="btn-checkout">Pagar y Participar</button>
+                        
+                        <!-- Hidden Webpay Form -->
+                        <div style="display:none;">
+                            <form id="webpay-official-form" method='post' action='https://www.webpay.cl/backpub/external/form-pay' target="_blank">
+                                <input type='hidden' name='idFormulario' value='284107' />
+                                <input type='hidden' name='monto' id='webpay-hidden-monto' value='7500' />
+                            </form>
+                        </div>
+
+                        <button type="submit" class="btn-checkout">Continuar al Pago con Webpay</button>
                         <p class="security-note">🔒 Pago 100% Seguro</p>
                     </form>
                 </div>
