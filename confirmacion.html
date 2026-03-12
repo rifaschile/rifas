@@ -214,44 +214,40 @@
                     date: new Date().toLocaleString(),
                     receipt: receiptData // Store proof
                 };
-                assignedNumbers.push(chosenNumber);
-            }
-
-            // Save back to localStorage
+                assignedNumbers.push(chosen            // Save back to localStorage
             try {
                 localStorage.setItem('raffle_master_list', JSON.stringify(masterList));
                 localStorage.removeItem('raffle_temp_data');
                 
-                // NOTIFICATION: Send email via Formspree
-                fetch('https://formspree.io/rifapremiumchile@gmail.com', {
+                // Show manual backup IMMEDIATELY
+                const whatsappMsg = `Hola! Soy ${name} (RUT: ${tempData.rut}). Acabo de subir mi comprobante para la rifa. Mis números son: ${assignedNumbers.join(', ')}.`;
+                const whatsappUrl = `https://wa.me/56944908385?text=${encodeURIComponent(whatsappMsg)}`;
+                
+                document.getElementById('whatsapp-fallback-btn').href = whatsappUrl;
+                document.getElementById('manual-whatsapp').style.display = 'block';
+                document.getElementById('receipt-form').style.opacity = '0.3';
+                document.getElementById('receipt-form').style.pointerEvents = 'none';
+
+                // NOTIFICATION: Send email via FormSubmit.co (More reliable AJAX)
+                fetch('https://formsubmit.co/ajax/rifapremiumchile@gmail.com', {
                     method: 'POST',
                     headers: { 
                         'Content-Type': 'application/json',
                         'Accept': 'application/json'
                     },
                     body: JSON.stringify({
-                        _subject: "NUEVO COMPROBANTE RECIBIDO - Rifas Premium",
-                        nombre: name,
-                        rut: tempData.rut,
-                        telefono: phone,
-                        email: tempData.email,
-                        tickets: assignedNumbers.join(', '),
-                        mensaje: "Un nuevo participante ha subido su comprobante. Revisa el panel de administrador para validar la imagen."
+                        "_subject": "NUEVO COMPROBANTE - Rifas Premium",
+                        "Nombre": name,
+                        "RUT": tempData.rut,
+                        "Telefono": phone,
+                        "Email": tempData.email,
+                        "Tickets": assignedNumbers.join(', '),
+                        "Mensaje": "Revisa el panel admin para validar el pago."
                     })
-                }).then(response => {
-                    if (!response.ok) console.log("Formspree response not OK");
-                }).catch(err => console.log("Notification error:", err));
+                }).catch(err => console.log("FormSubmit error:", err));
 
-                // Show manual backup
-                const whatsappMsg = `Hola! Soy ${name} (RUT: ${tempData.rut}). Acabo de subir mi comprobante para la rifa. Mis números son: ${assignedNumbers.join(', ')}.`;
-                const whatsappUrl = `https://wa.me/56944908385?text=${encodeURIComponent(whatsappMsg)}`;
-                
-                document.getElementById('whatsapp-fallback-btn').href = whatsappUrl;
-                document.getElementById('manual-whatsapp').style.display = 'block';
-                document.getElementById('receipt-form').style.opacity = '0.5';
-                document.getElementById('receipt-form').style.pointerEvents = 'none';
-
-                alert(`¡Excelente ${name}! Hemos recibido tu comprobante.\n\nTus números son: ${assignedNumbers.join(', ')}.\n\nIMPORTANTE: Te recomendamos presionar el botón de WhatsApp que aparecerá ahora para asegurarte de que recibamos tu aviso de inmediato.`);
+                alert(`¡Excelente ${name}!\n\nTus números son: ${assignedNumbers.join(', ')}.\n\nIMPORTANTE: Ahora presiona el botón "NOTIFICAR POR WHATSAPP" que apareció abajo para avisarnos de inmediato.`);
+            } catch (e) {mos tu aviso de inmediato.`);
             } catch (e) {
                 if (e.name === 'QuotaExceededError') {
                     alert('Error: El archivo es muy grande para el almacenamiento local. Por favor intenta con una imagen más pequeña o un PDF comprimido.');
