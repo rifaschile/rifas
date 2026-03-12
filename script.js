@@ -52,6 +52,10 @@ document.addEventListener('DOMContentLoaded', () => {
         total = (setsOfThree * 15000) + (remainder * ticketPrice);
 
         totalAmountSpan.textContent = '$' + total.toLocaleString('es-CL');
+        
+        // Update hidden Webpay field
+        const webpayMonto = document.getElementById('webpay-hidden-monto');
+        if (webpayMonto) webpayMonto.value = total;
     }
 
     // RUT Formatting & Validation
@@ -102,17 +106,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
+            // Save data for later
             localStorage.setItem('raffle_temp_data', JSON.stringify({ name, rut, phone, email, quantity }));
 
-            alert(`¡Gracias por tu compra, ${name}!\n\nRUT: ${rut}\nTotal: ${total}\n\nAbriremos Webpay en una nueva pestaña y te llevaremos a la página de confirmación para que subas tu comprobante.`);
+            alert(`¡Excelente ${name}!\n\nSe abrirá la ventana oficial de Webpay para que realices tu pago por ${total}.\n\nUna vez pagado, esta ventana te llevará al último paso para subir tu comprobante.`);
 
-            const webpayBaseUrl = "https://www.webpay.cl/form-pay/284107?utm_source=transbank&utm_medium=portal3.0&utm_campaign=link_portal";
-            window.open(webpayBaseUrl, '_blank');
-            window.location.href = 'confirmacion.html';
+            // Submit the official Webpay form in new window
+            const webpayForm = document.getElementById('webpay-official-form');
+            if (webpayForm) {
+                webpayForm.submit();
+            }
 
-            checkoutForm.reset();
-            ticketInput.value = 1;
-            updateTotal();
+            // Move this window to confirmation page
+            setTimeout(() => {
+                window.location.href = 'confirmacion.html';
+            }, 1000);
         });
     }
 
@@ -171,7 +179,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             localStorage.setItem('raffle_messages', JSON.stringify(messages));
 
-            alert('�Gracias ' + name + '! Tu mensaje ha sido enviado. Te responderemos a la brevedad.');
+            alert('¡Gracias ' + name + '! Tu mensaje ha sido enviado. Te responderemos a la brevedad.');
             contactForm.reset();
         });
     }
