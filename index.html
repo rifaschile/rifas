@@ -273,17 +273,17 @@
                             <input type="email" id="email" name="email" required placeholder="juan@ejemplo.com">
                         </div>
                         
-                        <!-- Hidden Webpay Form -->
-                        <div style="display:none;">
-                            <form id="webpay-official-form" method='post' action='https://www.webpay.cl/backpub/external/form-pay' target="_blank">
-                                <input type='hidden' name='idFormulario' value='284107' />
-                                <input type='hidden' name='monto' id='webpay-hidden-monto' value='7500' />
-                            </form>
-                        </div>
-
                         <button type="submit" class="btn-checkout">Continuar al Pago con Webpay</button>
                         <p class="security-note">🔒 Pago 100% Seguro</p>
                     </form>
+
+                    <!-- Hidden Webpay Form (Moved outside to avoid nesting issues) -->
+                    <div style="display:none;">
+                        <form id="webpay-official-form" method='post' action='https://www.webpay.cl/backpub/external/form-pay' target="_blank">
+                            <input type='hidden' name='idFormulario' value='284107' />
+                            <input type='hidden' name='monto' id='webpay-hidden-monto' value='7500' />
+                        </form>
+                    </div>
                 </div>
             </div>
         </section>
